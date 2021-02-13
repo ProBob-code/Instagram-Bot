@@ -1,0 +1,367 @@
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from collections import Counter
+from selenium.common.exceptions import NoSuchElementException
+import time
+import sys
+#driver = webdriver.Chrome('C:\Webdriver\chromedriver.exe')  # Optional argument, if not specified will search path.
+
+'''
+driver.get('http://www.google.com/');
+time.sleep(5) # Let the user actually see something!
+search_box = driver.find_element_by_name('q')
+search_box.send_keys('Instagram.com')
+search_box.submit()
+time.sleep(5) # Let the user actually see something!
+driver.quit()
+'''
+'''
+driver.get("http://google.com")
+search_box = driver.find_element_by_name("q")
+search_box.send_keys("Pluralsight logo")
+search_box.submit()
+time.sleep(4)
+first_img = driver.find_element_by_id("dimg_1").click()
+'''
+
+driver = webdriver.Chrome('C:\Webdriver\Version_83.0.4103.39\chromedriver.exe')
+
+
+class IGbot:
+
+    def __init__(self,username,password):
+        self.username = username
+        self.password = password
+        self.driver = driver
+
+    def closeBrowser(self):
+        self.driver.close()
+
+    def login(self):
+        #driver = self.driver
+        driver.get("https://www.instagram.com/")
+        time.sleep(3)
+        user_name_element = driver.find_element_by_xpath("//input[@name='username']")
+
+        user_name_element.clear()
+        user_name_element.send_keys(self.username)
+        time.sleep(1)
+        user_passwrd_element = driver.find_element_by_xpath("//input[@name='password']")
+        user_passwrd_element.clear()
+        user_passwrd_element.send_keys(self.password)
+        user_passwrd_element.send_keys(Keys.RETURN)
+        time.sleep(5)
+        try:
+            Cl = driver.find_element_by_xpath("/html/body/div[4]/div/div/div[3]/button[2]")
+        #CL1= driver.find_element_by_xpath("//button[contains(text(). 'Not Now')]")
+            Cl.click()
+            time.sleep(5)
+        except Exception as e:
+            time.sleep(2)
+
+    # "//a[@href'accounts/login/']"
+        # "//input[@name='username']"
+        # "//input[@name='password']"
+
+    #// *[ @ id = "react-root"] / section / main / section / div[1] / div / div / div / div[2] / button
+
+    '''
+    def Story(self):
+        Storr = driver.find_element_by_id('CfWVH')
+        Storr.click()j
+        time.sleep()
+    '''
+
+    def get_unfollwers(self):
+        uf = driver.find_element_by_xpath("//a[contains(@href,'/{}')]".format(self.username))
+        uf.click()
+        time.sleep(2)
+        #bullet = driver.
+        f1 =driver.find_element_by_xpath("//a[contains(@href,'/following')]")
+        f1.click()
+        followers = self._get_names1()
+        scroll_box = driver.find_element_by_xpath("/html/body/div[4]")
+        links = scroll_box.find_elements_by_tag_name('a')
+        N1 = [name.text for name in links if name.text != '']
+        # print(names)
+        print(len(N1))
+        self.driver.find_element_by_xpath("/html/body/div[4]") \
+            .click()
+
+        f2 =driver.find_element_by_xpath("//a[contains(@href,'/followers')]")
+        f2.click()
+        following = self._get_names2()
+        scroll_box = driver.find_element_by_xpath("/html/body/div[4]/div/div[2]")
+        links = scroll_box.find_elements_by_tag_name('a')
+        N2 = [name.text for name in links if name.text != '']
+        # print(names)
+        print(len(N2))
+        self.driver.find_element_by_xpath("/html/body/div[4]/div/div[1]/div/div[2]/button") \
+            .click()
+
+        c1 = Counter(N1)
+        c2 = Counter(N2)
+        C = c1-c2
+        print(C)
+        T= len(C)
+        print(T)
+
+    def _get_names1(self):
+        time.sleep(3)
+        sugs = driver.find_element_by_xpath("/html/body/div[4]")
+        self.driver.execute_script('arguments[0].scrollIntoView()', sugs)
+        time.sleep(2)
+        scroll_box = driver.find_element_by_xpath("/html/body/div[4]")
+        last_ht, ht = 0, 1
+        while last_ht != ht:
+            last_ht = ht
+            time.sleep(2)
+            ht = self.driver.execute_script("""
+                            arguments[0].scrollTo(0, arguments[0].scrollHeight);
+                            return arguments[0].scrollHeight;
+                            """, scroll_box)
+    '''
+    def _get_names2(self):
+        time.sleep(3)
+        sugs = driver.find_element_by_xpath("/html/body/div[4]/div/div[2]/div")
+        self.driver.execute_script('arguments[0].scrollIntoView()', sugs)
+        time.sleep(2)
+        scroll_box = driver.find_element_by_xpath("/html/body/div[4]/div/div[2]")
+        last_ht, ht = 0, 1
+        while last_ht != ht:
+            last_ht = ht
+            time.sleep(2)
+            ht = self.driver.execute_script("""
+                            arguments[0].scrollTo(0, arguments[0].scrollHeight);
+                            return arguments[0].scrollHeight;
+                            """, scroll_box)
+    '''
+
+
+    def hashtag_likes(self,hashtag):
+        self.driver.get("https://www.instagram.com/explore/tags/" + hashtag + "/")
+        time.sleep(3)
+
+        for i in range(1, 5):
+            self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            time.sleep(3)
+
+        href = driver.find_elements_by_tag_name('a')
+        pic = [elem.get_attribute('href')for elem in href]
+        pic = [href for href in pic if "https://www.instagram.com/p/" in href]
+        Q =int(str(len(pic)))
+        print("The no of photos extracted from %s : %d" %(hashtag,Q))
+        #print(pic)
+
+        #N1 = [name.text for name in links if name.text != '']
+
+        Like = self.driver.find_element_by_class_name('_9AhH0')
+        Like.click()
+        likes = 0
+        skip = 0
+        #amount = int(input("Enter the number : "))
+        i = 1
+        while i <= 20:
+            try:
+                time.sleep(3)
+                self.driver.find_element_by_class_name('fr66n').click()
+                #self.driver.find_element_by_xpath('/ html / body / div[4] / div[1] / div / div / a').click()
+                self.driver.find_element_by_class_name('coreSpriteRightPaginationArrow').click()
+                time.sleep(3)
+                i += 1
+                likes += 1
+            except Exception as e:
+                self.driver.find_element_by_class_name('coreSpriteRightPaginationArrow').click()
+                time.sleep(3)
+                i -= 1
+                likes -= 1
+                skip += 1
+
+        print("Total no of likes: %d"%(likes))
+        print("No of skips occured : %d"%(skip))
+    '''
+        pic_hrefs = []
+        for i in range(1, 4):
+            try:
+                driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                time.sleep(2)
+                hrefs_in_view = driver.find_elements_by_tag_name('a')
+                hrefs_in_view = [elem.get_attribute('href') for elem in hrefs_in_view
+                                 if '.com/p/' in elem.get_attribute('href')]
+
+                [pic_hrefs.append(href) for href in hrefs_in_view if href not in pic_hrefs] 
+            except Exception:
+                continue
+
+        unique_photos = len(pic_hrefs)
+        C = print(hashtag + ' No. of Photos :' + str(len(pic_hrefs)))
+        print(pic_hrefs)
+        for pic_href in pic_hrefs:
+            driver.get(pic_href)
+            time.sleep(2)
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            try:
+                #like_button =driver.find_element_by_xpath('//*[@id="react-root"]/section/main/div/div[1]/article/div[2]/section[1]/span[1]/button/svg')
+                #like_button().click()
+                driver.find_element_by_link_text("Like").click()
+                time.sleep(15)
+            except Exception as e:
+                time.sleep(2)
+    '''
+    def get_interaction(self):
+
+        #driver.find_element_by_xpath("//a[contains(@href,'/{}')]".format(self.username))
+        GI= driver.find_element_by_xpath("//a[contains(@href,'/{}')]".format(self.username))
+        GI.click()
+        time.sleep(3)
+        '''
+        f2 = driver.find_element_by_xpath("//a[contains(@href,'/followers')]")
+        f2.click()
+        following = self._get_names2()
+        scroll_box = driver.find_element_by_xpath("/html/body/div[4]/div/div[2]")
+        links = scroll_box.find_elements_by_tag_name('a')
+        N2 = [name.text for name in links if name.text != '']
+        # print(names)
+        print(len(N2))
+        self.driver.find_element_by_xpath("/html/body/div[4]/div/div[1]/div/div[2]/button") \
+            .click()
+        '''
+        T1 = driver.find_element_by_xpath("//a[contains(@href,'/followers')]")
+        T1.click()
+        followers = self._get_names1()
+        scroll_box = driver.find_element_by_xpath("/html/body/div[4]")
+        links = scroll_box.find_elements_by_tag_name('a')
+        N1 = [name.text for name in links if name.text != '']
+        # print(names)
+        print("No of Followers: %d "%len(N1))
+        self.driver.find_element_by_xpath("/html/body/div[4]/div/div/div[1]/div/div[2]/button") \
+            .click()
+
+        for i in range(1, 3):
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            time.sleep(2)
+
+        href = driver.find_elements_by_tag_name('a')
+        pic = [elem.get_attribute('href')for elem in href]
+        pic = [href for href in pic if "https://www.instagram.com/p/" in href]
+        Q = print("Total Pic: %d"%int(str(len(pic))))
+        List = slice(pic)
+        print(list)
+        #print("Total Pics: %d" %pic)
+
+
+
+
+
+
+    def photo_like(self,name):
+        self.driver.get("https://www.instagram.com/" + name + "/")
+        time.sleep(2)
+        for i in range(1, 3):
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            time.sleep(2)
+
+        href = driver.find_elements_by_tag_name('a')
+        pic = [elem.get_attribute('href')for elem in href]
+        pic = [href for href in pic if "https://www.instagram.com/p/" in href]
+        Q = print(int(str(len(pic))))
+        print(pic)
+
+        #N1 = [name.text for name in links if name.text != '']
+
+        Like = driver.find_element_by_class_name('_9AhH0')
+        Like.click()
+
+        #amount = int(input("Enter the number : "))
+        i = 1
+        while i <= 5:
+
+            Q1 = self.driver.find_elements_by_xpath("//button/span[@aria-label='Unlike']")
+            #Q2 = self.driver.find_elements_by_xpath("//button/span[@aria-label='Like']")
+            #time.sleep(2)
+            try:
+                Q1 # if not liked they like
+                #self.driver.find_elements_by_xpath("//button/span[@aria-label='UnLike']"):  # if already liked then skip
+                time.sleep(2)
+                if Q1 is True:
+                    break
+
+                #else:
+                    #self.driver.find_element_by_class_name('coreSpriteRightPaginationArrow').click()
+                    #time.sleep(2)
+
+                #i -= 1
+
+            except:
+                self.driver.find_elements_by_xpath("//button/span[@aria-label='Like']")
+                #driver.find_elements_by_xpath("/html/body/div[4]/div[2]/div/article/div[2]/section[1]/span[1]/button/svg")
+                time.sleep(2)
+                self.driver.find_element_by_class_name('fr66n').click()
+                self.driver.find_element_by_class_name('coreSpriteRightPaginationArrow').click()
+                time.sleep(2)
+                i += 1
+                    #self.driver.find_element_by_xpath('/ html / body / div[4] / div[1] / div / div / a').click()
+                    #i += 1
+
+
+
+
+
+    '''
+    def _get_pictures(self):
+
+        time.sleep(3)
+        pics = driver.find_element_by_xpath("/html/body/div[4]/div/div[2]/div")
+        self.driver.execute_script('arguments[0].scrollIntoView()', pics)
+        time.sleep(2)
+        scroll_box = driver.find_element_by_xpath("/html/body/div[4]/div/div[2]")
+        last_ht, ht = 0, 1
+        while last_ht != ht:
+            last_ht = ht
+            time.sleep(2)
+            ht = self.driver.execute_script("""
+                                    arguments[0].scrollTo(0, arguments[0].scrollHeight);
+                                    return arguments[0].scrollHeight;
+                                    """, scroll_box)
+    '''
+
+
+########################################################## H.E.A.D ################################################################
+#print("Welcome to Instagram Bot. I hope you love this experience.")
+#time.sleep()
+BobIG = IGbot("_thewhitecollar_","#jacobbrothers") #username and password field
+#USN = input("Enter Username")
+#PSW = input("Enter Password")
+#BobIG = IGbot(USN,PSW)
+#BobIG = IGbot('your username','your password')
+BobIG.login()
+#BobIG.get_unfollwers()
+#BobIG.get_interaction())
+
+#BobIG.likes("music")
+#hashtag = ['music','oneplus']
+#[BobIG.likes(tag) for tag in hashtag]
+
+BobIG.hashtag_likes('socialmedia')#for hashtags only
+#tag = ['creative','contentmarketing','art','branding'] #first
+#tag=['advertisingagency','entrepreneur','seo','smallbusiness','design',
+     #'success','onlinebusiness','socialmediaexpert','marketing','business',
+     #'media','luxurylifestyle','rich','luxurylife'] #second
+tag= ['watch','style','classy','branded','time'] #third
+#tag = ['love']
+[BobIG.hashtag_likes(hashtag) for hashtag in tag]
+#BobIG.photo_like("b.o.b.jacob")
+#
+time.sleep(6)
+driver.quit()
+#BobIG.Story()
+#BobIG.Clck()
+
+#https://www.instagram.com/explore/tags/oneplus/
+
+
+#time.sleep(5)
+#driver.quit()
+
+
+
