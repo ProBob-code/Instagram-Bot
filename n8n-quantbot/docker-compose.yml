@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  n8n:
+    image: n8nio/n8n
+    restart: always
+    ports:
+      - "5678:5678"
+    environment:
+      - GENERIC_TIMEZONE=${GENERIC_TIMEZONE}
+      - TZ=${TZ}
+      # Add other environment variables for API keys later
+      # e.g., ZERODHA_API_KEY=${ZERODHA_API_KEY}
+    volumes:
+      - ~/.n8n:/home/node/.n8n
+      # To access custom scripts, you might need to mount them:
+      # - ./models:/home/node/models
+      # - ./utils:/home/node/utils
+      # - ./workflows:/home/node/workflows # For n8n to potentially pick up workflow files if supported, or for backup
+
+volumes:
+  n8n_data:
