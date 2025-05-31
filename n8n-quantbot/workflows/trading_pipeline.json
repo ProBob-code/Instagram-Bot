@@ -1,0 +1,267 @@
+{
+  "name": "QuantBot Trading Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": "0 0 * * *", // Placeholder: Every day at midnight
+        "timezone": "America/New_York"
+      },
+      "name": "Start Trigger (Cron)",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [50, 300],
+      "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef"
+    },
+    {
+      "parameters": {
+        "url": "https://api.example.com/stock_data", // Placeholder URL
+        "authentication": "headerAuth",
+        "headerAuth": {
+          "name": "X-API-KEY",
+          "value": "={{ $env.STOCK_API_KEY }}" // Example of using environment variable
+        },
+        "options": {}
+      },
+      "name": "Data Fetch Agent (HTTP Request)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [250, 100],
+      "id": "b2c3d4e5-f6a7-8901-2345-678901bcdef0"
+    },
+    {
+      "parameters": {
+        "command": "python utils/data_cleaner.py"
+      },
+      "name": "Data Clean Agent (Execute Command)",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [450, 100],
+      "id": "c3d4e5f6-a7b8-9012-3456-789012cdef01"
+    },
+    {
+      "parameters": {
+        "command": "python models/price_forecast.py"
+      },
+      "name": "Forecasting Agent (Execute Command)",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [650, 100],
+      "id": "d4e5f6a7-b8c9-0123-4567-890123def012"
+    },
+    {
+      "parameters": {
+        "url": "https://api.example.com/news_data", // Placeholder URL
+        "authentication": "headerAuth",
+        "headerAuth": {
+          "name": "X-API-KEY",
+          "value": "={{ $env.NEWS_API_KEY }}" // Example of using environment variable
+        },
+        "options": {}
+      },
+      "name": "News Fetch Agent (HTTP Request)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [250, 500],
+      "id": "e5f6a7b8-c9d0-1234-5678-901234ef0123"
+    },
+    {
+      "parameters": {
+        "command": "python models/sentiment_model.py"
+      },
+      "name": "Sentiment Analysis Agent (Execute Command)",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [450, 500],
+      "id": "f6a7b8c9-d0e1-2345-6789-012345f01234"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {},
+          "conditions": [ // Placeholder: if forecast is positive and sentiment is positive
+            {
+              "value1": "={{ $json.price_forecast_output }}", // Example: output from Forecasting Agent
+              "operation": "larger",
+              "value2": 0
+            },
+            {
+              "value1": "={{ $json.sentiment_output }}", // Example: output from Sentiment Analysis
+              "operation": "contains",
+              "value2": "positive"
+            }
+          ]
+        }
+      },
+      "name": "Strategy Combiner Agent (IF)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [850, 300],
+      "id": "0a1b2c3d-4e5f-6789-0123-456789abcdef"
+    },
+    {
+      "parameters": {
+        "webhookUrl": "={{ $env.SLACK_WEBHOOK_URL }}", // Example of using environment variable
+        "text": "Trading Signal: {{ $json.combined_strategy_output }}" // Example: output from Strategy Combiner
+      },
+      "name": "Notification Agent (Slack)",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1,
+      "position": [1050, 300],
+      "id": "1b2c3d4e-5f6a-7890-1234-567890bcdef0"
+    },
+    {
+      "parameters": {
+        "timeout": 3600, // Placeholder: Wait for 1 hour
+        "timeoutUnit": "seconds"
+      },
+      "name": "Manual Approval Agent (Wait)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [1250, 300],
+      "id": "2c3d4e5f-6a7b-8901-2345-678901cdef01"
+    },
+    {
+      "parameters": {
+        "url": "https://api.broker.com/execute_trade", // Placeholder URL
+        "authentication": "headerAuth",
+        "headerAuth": {
+          "name": "Authorization",
+          "value": "Bearer {{ $env.BROKER_API_KEY }}" // Example of using environment variable
+        },
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "action",
+              "value": "={{ $json.trade_action }}" // Example: BUY/SELL
+            },
+            {
+              "name": "symbol",
+              "value": "={{ $json.symbol }}"
+            },
+            {
+              "name": "quantity",
+              "value": "={{ $json.quantity }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Trade Execution Agent (HTTP Request)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [1450, 300],
+      "id": "3d4e5f6a-7b8c-9012-3456-789012def012"
+    }
+  ],
+  "connections": {
+    "Start Trigger (Cron)": {
+      "main": [
+        [
+          {
+            "node": "Data Fetch Agent (HTTP Request)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "News Fetch Agent (HTTP Request)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Fetch Agent (HTTP Request)": {
+      "main": [
+        [
+          {
+            "node": "Data Clean Agent (Execute Command)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Clean Agent (Execute Command)": {
+      "main": [
+        [
+          {
+            "node": "Forecasting Agent (Execute Command)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Forecasting Agent (Execute Command)": {
+      "main": [
+        [
+          {
+            "node": "Strategy Combiner Agent (IF)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "News Fetch Agent (HTTP Request)": {
+      "main": [
+        [
+          {
+            "node": "Sentiment Analysis Agent (Execute Command)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sentiment Analysis Agent (Execute Command)": {
+      "main": [
+        [
+          {
+            "node": "Strategy Combiner Agent (IF)",
+            "type": "main",
+            "index": 1 // Connect to the second input of the IF node
+          }
+        ]
+      ]
+    },
+    "Strategy Combiner Agent (IF)": {
+      "main": [ // Output for TRUE condition
+        [
+          {
+            "node": "Notification Agent (Slack)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+      // False output can be defined here if needed, e.g., connecting to a "Do Nothing" or alternative path
+    },
+    "Notification Agent (Slack)": {
+      "main": [
+        [
+          {
+            "node": "Manual Approval Agent (Wait)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Approval Agent (Wait)": {
+      "main": [
+        [
+          {
+            "node": "Trade Execution Agent (HTTP Request)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+    // "Trade Execution Agent (HTTP Request)" is the last node in this main path
+  },
+  "active": false,
+  "settings": {},
+  "id": "quantbot_trading_workflow_v1"
+}
